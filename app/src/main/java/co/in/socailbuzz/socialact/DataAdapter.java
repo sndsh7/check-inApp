@@ -3,6 +3,8 @@ package co.in.socailbuzz.socialact;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -33,14 +35,19 @@ public class DataAdapter {
     }
 
     public class DataSource {
-        private List<User> userList;
         private Retrofit retrofit;
         private Api api;
 
         DataSource() {
+            HttpLoggingInterceptor interceptor=new HttpLoggingInterceptor();
+            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+            OkHttpClient.Builder builder=new OkHttpClient.Builder();
+            builder.addInterceptor(interceptor);
+
             retrofit = new Retrofit.Builder()
                     .baseUrl(Api.ENDPOINT)
                     .addConverterFactory(GsonConverterFactory.create())
+                    .client(builder.build())
                     .build();
             api = retrofit.create(Api.class);
         }
@@ -58,7 +65,7 @@ public class DataAdapter {
 
                         @Override
                         public void onFailure(Call<Data> call, Throwable t) {
-                            callback.onFailed("Unable to get Users");
+                            callback.onFailed("Unable to get Users" +t.getMessage());
                         }
                     });
         }

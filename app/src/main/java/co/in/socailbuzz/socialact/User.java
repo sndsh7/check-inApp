@@ -11,6 +11,7 @@ public class User implements Parcelable {
     private String company;
     private String email;
     private String mobile;
+    private String empcode;
     private String type;
     private String avatar;
     private String band_uid;
@@ -18,7 +19,7 @@ public class User implements Parcelable {
     private String social_id;
     private String checkin;
 
-    public User(String id, String name, String designation, String company, String email, String mobile, String type, String avatar, String band_uid, String band_number, String social_id, String checkin) {
+    public User(String id, String name, String designation, String company, String email, String mobile,String empcode, String type, String avatar, String band_uid, String band_number, String social_id, String checkin) {
         this.id = id;
         this.name = name;
         this.designation = designation;
@@ -31,6 +32,7 @@ public class User implements Parcelable {
         this.band_number = band_number;
         this.social_id = social_id;
         this.checkin = checkin;
+        this.empcode = empcode;
     }
 
     public String getId() {
@@ -79,6 +81,14 @@ public class User implements Parcelable {
 
     public void setMobile(String mobile) {
         this.mobile = mobile;
+    }
+
+    public String getEmpcode() {
+        return empcode;
+    }
+
+    public void setEmpcode(String empcode) {
+        this.empcode = empcode;
     }
 
     public String getType() {
@@ -142,6 +152,7 @@ public class User implements Parcelable {
         dest.writeString(this.company);
         dest.writeString(this.email);
         dest.writeString(this.mobile);
+        dest.writeString(this.empcode);
         dest.writeString(this.type);
         dest.writeString(this.avatar);
         dest.writeString(this.band_uid);
@@ -160,6 +171,7 @@ public class User implements Parcelable {
         this.company = in.readString();
         this.email = in.readString();
         this.mobile = in.readString();
+        this.empcode = in.readString();
         this.type = in.readString();
         this.avatar = in.readString();
         this.band_uid = in.readString();
@@ -182,7 +194,7 @@ public class User implements Parcelable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj != null && obj instanceof User)
+        if (obj != null && !(obj instanceof User))
             return false;
         User user = (User) obj;
 

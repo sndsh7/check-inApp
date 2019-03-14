@@ -6,13 +6,18 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -51,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onFailed(String message) {
-        Toast.makeText(this, "Unable to fetch detail try again..", Toast.LENGTH_SHORT).show();
+        scan.setEnabled(false);
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -70,15 +76,40 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void showAlert(String contents) {
         User user = gson.fromJson(contents, User.class);
-        boolean isValid=users.contains(user);
-        Log.i("Scanned" , "User "+user.getEmail()+""+user.getMobile());
+        boolean isValid = users.contains(user);
+        Log.i("Scanned", "User " + user.getEmail() + "" + user.getMobile());
+        View view = LayoutInflater.from(this).inflate(R.layout.user, null);
+
+        formatOnOutput(user, view, isValid);
+
         new AlertDialog.Builder(this)
-                .setMessage(contents)
+                .setView(view)
                 .setNegativeButton("Exit", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }
                 }).show();
+    }
+
+    private void formatOnOutput(User user, View view, boolean isValid) {
+        ImageView photo = view.findViewById(R.id.user_image);
+        TextView name = view.findViewById(R.id.user_name);
+        TextView email = view.findViewById(R.id.user_email);
+        TextView mobile = view.findViewById(R.id.user_mobile);
+        TextView status=view.findViewById(R.id.container_status);
+        ViewGroup group=view.findViewById(R.id.container);
+        if (!isValid) {
+            photo.setImageResource(R.drawable.fail);
+            status.setText("Invalid User");
+            group.setVisibility(View.GONE);
+        } else {
+
+            Picasso.get().load(user.getAvatar()).centerCrop().into(photo);//need to remove all "\" from url link
+            name.setText(user.getName());
+            email.setText(user.getEmail());
+            mobile.setText(user.getMobile());
+            status.setText("User Info");
+        }
     }
 }
