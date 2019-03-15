@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,7 +20,14 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.picasso.Picasso;
 
+import java.io.IOException;
 import java.util.List;
+
+import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserCallback {
 
@@ -27,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private DataAdapter.DataSource source;
     private List<User> users;
     private Gson gson;
+    private final String DEVICE_ID = "sbt";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +86,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void showAlert(String contents) {
         User user = gson.fromJson(contents, User.class);
         boolean isValid = users.contains(user);
-        Log.i("Scanned", "User " + user.getEmail() + "" + user.getMobile());
+
+        if (TextUtils.isEmpty(user.getBand_uid())) {
+            Toast.makeText(this, MyApplication.getInstance().getString(R.string.invalid_band_id), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        boolean checkIn = DataAdapter.getInstance().getDataSource().checkInUser(DEVICE_ID, user.getBand_uid());
+
+        if (checkIn) showCheckInDialog(user, isValid);
+        else
+            Toast.makeText(this, MyApplication.getInstance().getString(R.string.unable_to_check_in), Toast.LENGTH_LONG).show();
+    }
+
+    private void showCheckInDialog(User user, boolean isValid) {
         View view = LayoutInflater.from(this).inflate(R.layout.user, null);
 
         formatOnOutput(user, view, isValid);
@@ -97,8 +119,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TextView name = view.findViewById(R.id.user_name);
         TextView email = view.findViewById(R.id.user_email);
         TextView mobile = view.findViewById(R.id.user_mobile);
-        TextView status=view.findViewById(R.id.container_status);
-        ViewGroup group=view.findViewById(R.id.container);
+        TextView status = view.findViewById(R.id.container_status);
+        ViewGroup group = view.findViewById(R.id.container);
         if (!isValid) {
             photo.setImageResource(R.drawable.fail);
             status.setText("Invalid User");
@@ -112,4 +134,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             status.setText("User Info");
         }
     }
+
 }

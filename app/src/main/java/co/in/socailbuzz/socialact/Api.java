@@ -6,13 +6,17 @@ import retrofit2.Response;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface Api {
-    String ENDPOINT="http://socialact.in/";
+    String ENDPOINT = "http://socialact.in/api/";
+    String DEVICE_ID = "device";
+    String BAND_UID = "tagid";
 
-    @GET("api/campaign-users/comex-2019")
-     Call<Data> getAllUsers();
+    @GET("campaign-users/comex-2019")
+    Call<Data> getAllUsers();
 
-    @POST("api/campaign-users/comex-2019")
-    Call<ResponseBody> postCheckIn(@Body String checkIn);
+    @POST("post/message")
+    Call<ResponseBody> postCheckIn(@Query(DEVICE_ID) String deviceId, @Query(BAND_UID) String band_uid);
 }

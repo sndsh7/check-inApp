@@ -1,5 +1,6 @@
 package co.in.socailbuzz.socialact;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,21 +36,10 @@ public class DataAdapter {
     }
 
     public class DataSource {
-        private Retrofit retrofit;
         private Api api;
 
         DataSource() {
-            HttpLoggingInterceptor interceptor=new HttpLoggingInterceptor();
-            interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-            OkHttpClient.Builder builder=new OkHttpClient.Builder();
-            builder.addInterceptor(interceptor);
-
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(Api.ENDPOINT)
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .client(builder.build())
-                    .build();
-            api = retrofit.create(Api.class);
+            api = MyApplication.getNetworkInstance().create(Api.class);
         }
 
         public void getUsers(final UserCallback callback) {
@@ -65,11 +55,23 @@ public class DataAdapter {
 
                         @Override
                         public void onFailure(Call<Data> call, Throwable t) {
-                            callback.onFailed("Unable to get Users" +t.getMessage());
+                            callback.onFailed("Unable to get Users" + t.getMessage());
                         }
                     });
         }
 
+
+        public boolean checkInUser(String deviceId, String band_uid) {
+            String status = "FAIL";
+            try {
+                status = api.postCheckIn(deviceId, band_uid).execute().body().string();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (status.trim().equals("SUCCESS")) return true;
+            else return false;
+        }
 
     }
 }

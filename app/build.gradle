@@ -28,6 +28,7 @@ dependencies {
     //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
     implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    //implementation "com.squareup.retrofit2:converter-scalars:$retrofitVersion"
     implementation 'com.squareup.okhttp3:logging-interceptor:3.8.0'
     implementation ("com.journeyapps:zxing-android-embedded:3.6.0"){
         exclude group : 'com.android.support'
