@@ -1,9 +1,11 @@
 package co.in.socailbuzz.socialact;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -20,14 +22,17 @@ public class DataAdapter {
     }
 
     public static DataAdapter getInstance() {
-        if (mInstance == null)
+        if (mInstance == null) {
             mInstance = new DataAdapter();
+        }
+
         return mInstance;
     }
 
     public DataSource getDataSource() {
-        if (dataSource == null)
+        if (dataSource == null) {
             dataSource = new DataSource();
+        }
         return dataSource;
     }
 
@@ -46,18 +51,58 @@ public class DataAdapter {
                             if (response.isSuccessful())
                                 callback.onUsers(response.body().getData());
                             else
-                                callback.onFailed(MyApplication.getInstance().getString(R.string.fail_fetch_user));
+                                callback.onFailed("Unable to get Users");
                         }
 
                         @Override
                         public void onFailure(Call<Data> call, Throwable t) {
-                            callback.onFailed(MyApplication.getInstance().getString(R.string.fail_fetch_user) + t.getMessage());
+                            callback.onFailed("Unable to get Users" + t.getMessage());
                         }
                     });
         }
 
 
+        public void checkInUser(String deviceId, String band_uid, final PostCallback callback) {
+            api.postCheckIn(deviceId, band_uid).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        String status = "fail";
+                        try {
+                            status = response.body().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
+                        if (status.trim().equals("SUCCESS"))
+                            callback.onResultCalled(true, "SUCCESS");
+                        else
+                            callback.onResultCalled(false, null);
+                    } else
+                        callback.onResultCalled(false, null);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    callback.onResultCalled(false, null);
+                }
+            });
+        }
+
+        public void checkInExhibitor(String exhibitorName, String band_uid, final PostCallback callback) {
+            api.exhibitorCheckIn(exhibitorName,band_uid).enqueue(new Callback<ExhibitorResponseData>() {
+                @Override
+                public void onResponse(Call<ExhibitorResponseData> call, Response<ExhibitorResponseData> response) {
+                    if(response.isSuccessful())
+                        callback.onResultCalled(true,response.body());
+                }
+
+                @Override
+                public void onFailure(Call<ExhibitorResponseData> call, Throwable t) {
+
+                }
+            });
+        }
 
     }
 }

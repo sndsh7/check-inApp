@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">socialact</string>
     <string name="title_mainactivity">Social Act</string>
-    <string name="fail_fetch_user">Unable to get Users</string>
+    <string name="invalid_band_id">Band Id is not valid</string>
+    <string name="unable_to_check_in">Unable to check in user</string>
+    <string name="invalid_user_data">Invalid User Data</string>
 </resources>

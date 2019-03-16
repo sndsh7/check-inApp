@@ -1,12 +1,13 @@
 package co.in.socailbuzz.socialact;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,70 +16,64 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
-import java.util.List;
+import static co.in.socailbuzz.socialact.Constants.EXHIBITOR_CREDENTIALS;
+import static co.in.socailbuzz.socialact.Constants.EXHIBITOR_NAME;
 
-import okhttp3.OkHttpClient;
-import okhttp3.ResponseBody;
-import okhttp3.logging.HttpLoggingInterceptor;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickListener {
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserCallback {
-
-    private Button scan;
-    private Button exhibitor;
-    private Button refresh;
-    private DataAdapter.DataSource source;
-    private List<User> users;
-    private final String DEVICE_ID = "sbt";
+    private TextView exhibitorName;
+    private Button exhibitorScan, exhibitorLogout;
+    private SharedPreferences preferences;
+    private String exhibitorNameString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        scan = findViewById(R.id.scan);
-        exhibitor = findViewById(R.id.exhibitor);
-        source = DataAdapter.getInstance().getDataSource();
-        source.getUsers(this);
-        Toast.makeText(this, "Please Wait..", Toast.LENGTH_SHORT).show();
-        scan.setOnClickListener(this);
-        refresh = findViewById(R.id.fetch);
-        refresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //source.getUsers(this);
-                onUsers(users);
-            }
-        });
-        exhibitor.setOnClickListener(this);
+        setContentView(R.layout.activity_exhibitor_scan_qr);
+        exhibitorName = findViewById(R.id.exhibitorName_scanQr);
+        exhibitorScan = findViewById(R.id.scanButton_scanQr);
+        exhibitorLogout = findViewById(R.id.logOutButton_scanQr);
+        exhibitorScan.setOnClickListener(this);
+        exhibitorLogout.setOnClickListener(this);
+        preferences = getSharedPreferences(EXHIBITOR_CREDENTIALS, Context.MODE_PRIVATE);
+        updateExhibitor();
+    }
+
+    private void updateExhibitor() {
+        exhibitorNameString = preferences.getString(EXHIBITOR_NAME, "Not Valid");
+        exhibitorName.setText(exhibitorNameString);
     }
 
     @Override
     public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.exhibitorName_scanQr:
+                scanExhibitorQr();
+                break;
+
+            case R.id.logOutButton_scanQr:
+                logOutExhibitor();
+                break;
+        }
+    }
+
+
+    private void scanExhibitorQr() {
         IntentIntegrator integrator = new IntentIntegrator(this);
         integrator.setBeepEnabled(true);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
         integrator.initiateScan();
     }
 
-
-    @Override
-    public void onUsers(List<User> users) {
-        this.users = users;
-        Toast.makeText(this, "Fetch complete now you can scan ", Toast.LENGTH_SHORT).show();
+    private void logOutExhibitor() {
+        preferences.edit().remove(EXHIBITOR_NAME).apply();
+        startActivity(new Intent(this, ExhibitorLogin.class));
     }
 
-    @Override
-    public void onFailed(String message) {
-        scan.setEnabled(false);
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -94,34 +89,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private void showAlert(String contents) {
-        final User user = MyApplication.getGson().fromJson(contents, User.class);
-        final boolean isValid = users.contains(user);
-
-        if (TextUtils.isEmpty(user.getBand_uid())) {
-            Toast.makeText(this, MyApplication.getInstance().getString(R.string.invalid_band_id), Toast.LENGTH_LONG).show();
-            return;
-        }
-
-         DataAdapter.getInstance().getDataSource().checkInUser(DEVICE_ID, user.getBand_uid(), new PostCallback<String>() {
-            @Override
-            public void onResultCalled(boolean isSuccess, String result) {
-                if (isSuccess) showCheckInDialog(user, isValid);
-                else
-                    Toast.makeText(MainActivity.this, MyApplication.getInstance().getString(R.string.unable_to_check_in), Toast.LENGTH_LONG).show();
-            }
-        });
-
-//        DataAdapter.getInstance().getDataSource().checkInExhibitor(DEVICE_ID, user.getBand_uid(), new PostCallback<String>() {
-//            @Override
-//            public void onResultCalled(boolean isSuccess, String result) {
-//                if(isSuccess) showCheckInDialog(user,isValid);
-//                else
-//                    Toast.makeText(MainActivity.this,MyApplication.getInstance().getString(R.string.unable_to_check_in),Toast.LENGTH_LONG).show();
-//            }
-//        });
-
-
+    private void showAlert(String result) {
+        final User user = MyApplication.getGson().fromJson(result, User.class);
+        if (isInvalid(user, R.string.invalid_user_data)) return;
+        String bandId = user.getBand_uid();
+        if (isInvalid(bandId, R.string.invalid_band_id)) return;
+        DataAdapter.getInstance().getDataSource()
+                .checkInExhibitor(exhibitorNameString, user.getBand_uid(), new PostCallback<ExhibitorResponseData>() {
+                    @Override
+                    public void onResultCalled(boolean isSuccess, ExhibitorResponseData result) {
+                        if (result != null && result.status.trim().equals("SUCCESS"))
+                            showCheckInDialog(user, true);
+                        else
+                            showCheckInDialog(user, false);
+                    }
+                });
     }
 
     private void showCheckInDialog(User user, boolean isValid) {
@@ -159,4 +141,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+
+    public <T> boolean isInvalid(T t, int stringId) {
+        if (t == null) {
+            Toast.makeText(this, stringId, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        return false;
+    }
 }
