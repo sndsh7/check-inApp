@@ -7,6 +7,13 @@
     android:background="@drawable/login_gradient"
     android:orientation="vertical"
     tools:context=".ExhibitorScanQR">
+    <ProgressBar
+        android:id="@+id/updateProgress_scanQr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/exhibitorName_scanQr"
+        android:layout_centerHorizontal="true"
+        android:visibility="gone"/>
 
     <TextView
         android:id="@+id/exhibitorName_scanQr"
@@ -31,6 +38,15 @@
             android:layout_margin="20dp"
             android:background="@drawable/custom_button"
             android:text="SCAN"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/updateCheckIn_scanQr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:background="@drawable/custom_button"
+            android:text="UPDATE CHECK IN"
             android:textColor="@android:color/white" />
 
         <Button

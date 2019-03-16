@@ -1,6 +1,12 @@
 package co.in.socailbuzz.socialact;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import com.google.gson.Gson;
 
@@ -13,6 +19,7 @@ public class MyApplication extends Application {
     private static MyApplication mInstance;
     private static Retrofit retrofit;
     private static Gson gson;
+
 
     @Override
     public void onCreate() {
@@ -35,9 +42,20 @@ public class MyApplication extends Application {
                 .build();
     }
 
-    public  static Gson getGson() {
+    public static Gson getGson() {
         return gson;
     }
+
+    public static boolean isNetConnected() {
+        ConnectivityManager cm =
+                (ConnectivityManager) MyApplication.mInstance.getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
+    }
+
+
 
     public static MyApplication getInstance() {
         return mInstance;

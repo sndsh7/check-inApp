@@ -35,6 +35,7 @@ public class ExhibitorLogin extends AppCompatActivity implements View.OnClickLis
         }
         SharedPreferences.Editor editor = getSharedPreferences(Constants.EXHIBITOR_CREDENTIALS, Context.MODE_PRIVATE).edit();
         editor.putString(Constants.EXHIBITOR_NAME, exName).apply();
-        startActivity(new Intent(this,ExhibitorScanQR.class));
+        startActivity(new Intent(this, ExhibitorScanQR.class));
+        finish();
     }
 }

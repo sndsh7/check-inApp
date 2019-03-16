@@ -1,5 +1,6 @@
 package co.in.socailbuzz.socialact;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v7.app.AlertDialog;
@@ -59,7 +60,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         exhibitor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this,ExhibitorLogin.class));
+                String exName = getSharedPreferences(Constants.EXHIBITOR_CREDENTIALS, Context.MODE_PRIVATE).getString(Constants.EXHIBITOR_NAME, "");
+                if (TextUtils.isEmpty(exName))
+                    startActivity(new Intent(MainActivity.this, ExhibitorLogin.class));
+                else
+                    startActivity(new Intent(MainActivity.this, ExhibitorScanQR.class));
             }
         });
     }
@@ -108,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 
-         DataAdapter.getInstance().getDataSource().checkInUser(DEVICE_ID, user.getBand_uid(), new PostCallback<String>() {
+        DataAdapter.getInstance().getDataSource().checkInUser(DEVICE_ID, user.getBand_uid(), new PostCallback<String>() {
             @Override
             public void onResultCalled(boolean isSuccess, String result) {
                 if (isSuccess) showCheckInDialog(user, isValid);
