@@ -81,7 +81,7 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
         final int counter = 0;
         final int total_users = users.size() - 1;
         if (total_users == -1) {
-         Toast.makeText(this,"Local checkin  is empty",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Local checkin  is empty", Toast.LENGTH_SHORT).show();
             bar.setVisibility(View.GONE);
         }
         for (String user_bandId : users) {
@@ -89,8 +89,12 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
                     .checkInExhibitor(exhibitorNameString, user_bandId, new PostCallback<ExhibitorResponseData>() {
                         @Override
                         public void onResultCalled(boolean isSuccess, ExhibitorResponseData result) {
-                            if (counter >= total_users)
+                            if (counter >= total_users) {
                                 bar.setVisibility(View.GONE);
+                                Toast.makeText(ExhibitorScanQR.this, "Update completed", Toast.LENGTH_SHORT).show();
+                                users.clear();
+                                preferences.edit().putStringSet(Constants.EXHIBITOR_USERS,users).apply();
+                            }
                         }
                     });
         }
