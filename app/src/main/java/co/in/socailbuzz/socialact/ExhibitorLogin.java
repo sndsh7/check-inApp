@@ -1,5 +1,8 @@
 package co.in.socailbuzz.socialact;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -24,10 +27,14 @@ public class ExhibitorLogin extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        String exName = exhibitorName.getText().toString();
+        String exName = exhibitorName.getText().toString().trim();
 
-        if (TextUtils.isEmpty(exName))
+        if (TextUtils.isEmpty(exName)) {
             Toast.makeText(this, "Invalid Exhibitor Name", Toast.LENGTH_SHORT).show();
-
+            return;
+        }
+        SharedPreferences.Editor editor = getSharedPreferences(Constants.EXHIBITOR_CREDENTIALS, Context.MODE_PRIVATE).edit();
+        editor.putString(Constants.EXHIBITOR_NAME, exName).apply();
+        startActivity(new Intent(this,ExhibitorScanQR.class));
     }
 }

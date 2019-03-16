@@ -56,7 +56,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 onUsers(users);
             }
         });
-        exhibitor.setOnClickListener(this);
+        exhibitor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this,ExhibitorLogin.class));
+            }
+        });
     }
 
     @Override
