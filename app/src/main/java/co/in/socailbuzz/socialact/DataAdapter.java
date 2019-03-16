@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -61,16 +62,61 @@ public class DataAdapter {
         }
 
 
-        public boolean checkInUser(String deviceId, String band_uid) {
-            String status = "FAIL";
-            try {
-                status = api.postCheckIn(deviceId, band_uid).execute().body().string();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        public void checkInUser(String deviceId, String band_uid, final PostCallback callback) {
+            api.postCheckIn(deviceId, band_uid).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        String status = "fail";
+                        try {
+                            status = response.body().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-            if (status.trim().equals("SUCCESS")) return true;
-            else return false;
+                        if (status.trim().equals("SUCCESS"))
+                            callback.onResultCalled(true, "SUCCESS");
+                        else
+                            callback.onResultCalled(false, null);
+                    }
+                    else
+                        callback.onResultCalled(false,null);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+           callback.onResultCalled(false,null);
+                }
+            });
+        }
+
+        public void checkInExhibitor(String deviceId, String band_uid, final PostCallback callback)
+        {
+            api.postExhibitor(deviceId, band_uid).enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        String status = "fail";
+                        try {
+                            status = response.body().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                        if (status.trim().equals("SUCCESS"))
+                            callback.onResultCalled(true, "SUCCESS");
+                        else
+                            callback.onResultCalled(false, null);
+                    }
+                    else
+                        callback.onResultCalled(false,null);
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+                }
+            });
         }
 
     }

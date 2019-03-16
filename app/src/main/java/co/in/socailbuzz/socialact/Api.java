@@ -19,4 +19,7 @@ public interface Api {
 
     @POST("post/message")
     Call<ResponseBody> postCheckIn(@Query(DEVICE_ID) String deviceId, @Query(BAND_UID) String band_uid);
+
+    @POST("exhibitor")
+    Call<ResponseBody> postExhibitor(@Query(DEVICE_ID) String deviceId,@Query(BAND_UID) String band_uid);
 }

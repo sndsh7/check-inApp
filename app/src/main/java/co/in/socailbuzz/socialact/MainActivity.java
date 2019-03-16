@@ -32,6 +32,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserCallback {
 
     private Button scan;
+    private Button exhibitor;
+    private Button refresh;
     private DataAdapter.DataSource source;
     private List<User> users;
     private Gson gson;
@@ -42,10 +44,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         scan = findViewById(R.id.scan);
+        exhibitor = findViewById(R.id.exhibitor);
         source = DataAdapter.getInstance().getDataSource();
         source.getUsers(this);
         Toast.makeText(this, "Please Wait..", Toast.LENGTH_SHORT).show();
         scan.setOnClickListener(this);
+        refresh = findViewById(R.id.fetch);
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //source.getUsers(this);
+                onUsers(users);
+            }
+        });
+        exhibitor.setOnClickListener(this);
         gson = new Gson();
     }
 
@@ -57,7 +69,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         integrator.initiateScan();
     }
 
-    @Override
+
+    //@Override
     public void onUsers(List<User> users) {
         this.users = users;
         Toast.makeText(this, "Fetch complete now you can scan ", Toast.LENGTH_SHORT).show();
@@ -84,19 +97,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void showAlert(String contents) {
-        User user = gson.fromJson(contents, User.class);
-        boolean isValid = users.contains(user);
+        final User user = gson.fromJson(contents, User.class);
+        final boolean isValid = users.contains(user);
 
         if (TextUtils.isEmpty(user.getBand_uid())) {
             Toast.makeText(this, MyApplication.getInstance().getString(R.string.invalid_band_id), Toast.LENGTH_LONG).show();
             return;
         }
 
-        boolean checkIn = DataAdapter.getInstance().getDataSource().checkInUser(DEVICE_ID, user.getBand_uid());
+         DataAdapter.getInstance().getDataSource().checkInUser(DEVICE_ID, user.getBand_uid(), new PostCallback() {
+            @Override
+            public void onResultCalled(boolean isSuccess, String result) {
+                if (isSuccess) showCheckInDialog(user, isValid);
+                else
+                    Toast.makeText(MainActivity.this, MyApplication.getInstance().getString(R.string.unable_to_check_in), Toast.LENGTH_LONG).show();
+            }
+        });
 
-        if (checkIn) showCheckInDialog(user, isValid);
-        else
-            Toast.makeText(this, MyApplication.getInstance().getString(R.string.unable_to_check_in), Toast.LENGTH_LONG).show();
+        DataAdapter.getInstance().getDataSource().checkInExhibitor(DEVICE_ID, user.getBand_uid(), new PostCallback() {
+            @Override
+            public void onResultCalled(boolean isSuccess, String result) {
+                if(isSuccess) showCheckInDialog(user,isValid);
+                else
+                    Toast.makeText(MainActivity.this,MyApplication.getInstance().getString(R.string.unable_to_check_in),Toast.LENGTH_LONG).show();
+            }
+        });
+
+
     }
 
     private void showCheckInDialog(User user, boolean isValid) {
@@ -126,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             status.setText("Invalid User");
             group.setVisibility(View.GONE);
         } else {
-
             Picasso.get().load(user.getAvatar()).centerCrop().into(photo);//need to remove all "\" from url link
             name.setText(user.getName());
             email.setText(user.getEmail());
