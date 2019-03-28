@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/screenbg"
     android:weightSum="2">
 
 <LinearLayout
@@ -10,16 +11,20 @@
     android:layout_height="match_parent"
     android:layout_weight="1.6"></LinearLayout>
 
-    <Button
-        android:id="@+id/scan"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="SCAN"/>
+    <!--<Button-->
+        <!--android:id="@+id/scan"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:background="@drawable/custom_button"-->
+        <!--android:layout_marginBottom="30dp"-->
+        <!--android:text="SCAN"/>-->
 
     <Button
         android:id="@+id/exhibitor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/custom_button"
         android:text="Exhibitor"
         />
     <Button
@@ -27,5 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Refresh"
-        android:layout_marginBottom="80dp"/>
+        android:background="@drawable/custom_button"
+        android:layout_marginBottom="160dp"/>
 </LinearLayout>

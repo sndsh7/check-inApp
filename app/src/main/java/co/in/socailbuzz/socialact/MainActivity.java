@@ -43,12 +43,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        scan = findViewById(R.id.scan);
+        //scan = findViewById(R.id.scan);
         exhibitor = findViewById(R.id.exhibitor);
         source = DataAdapter.getInstance().getDataSource();
         source.getUsers(this);
         Toast.makeText(this, "Please Wait..", Toast.LENGTH_SHORT).show();
-        scan.setOnClickListener(this);
+        //scan.setOnClickListener(this);
         refresh = findViewById(R.id.fetch);
         refresh.setOnClickListener(new View.OnClickListener() {
             @Override
