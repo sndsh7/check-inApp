@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -32,7 +33,7 @@ import static co.in.socailbuzz.socialact.Constants.EXHIBITOR_NAME;
 public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickListener {
 
     private TextView exhibitorName;
-    private Button exhibitorScan, exhibitorLogout, updateCheckIn;
+    private Button exhibitorScan, exhibitorLogout, updateCheckIn, manual;
     private SharedPreferences preferences;
     private String exhibitorNameString;
     private ProgressBar bar;
@@ -45,9 +46,11 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
         exhibitorScan = findViewById(R.id.scanButton_scanQr);
         exhibitorLogout = findViewById(R.id.logOutButton_scanQr);
         updateCheckIn = findViewById(R.id.updateCheckIn_scanQr);
+        manual = findViewById(R.id.manualButton_scanQr);
         exhibitorScan.setOnClickListener(this);
         exhibitorLogout.setOnClickListener(this);
         updateCheckIn.setOnClickListener(this);
+        manual.setOnClickListener(this);
         preferences = getSharedPreferences(EXHIBITOR_CREDENTIALS, Context.MODE_PRIVATE);
         bar = findViewById(R.id.updateProgress_scanQr);
         updateExhibitor();
@@ -72,6 +75,10 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
             case R.id.updateCheckIn_scanQr:
                 updateCheckInUsers();
                 break;
+
+            case R.id.manualButton_scanQr:
+                showTagIdDialog();
+
         }
     }
 
@@ -93,7 +100,7 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
                                 bar.setVisibility(View.GONE);
                                 Toast.makeText(ExhibitorScanQR.this, "Update completed", Toast.LENGTH_SHORT).show();
                                 users.clear();
-                                preferences.edit().putStringSet(Constants.EXHIBITOR_USERS,users).apply();
+                                preferences.edit().putStringSet(Constants.EXHIBITOR_USERS, users).apply();
                             }
                         }
                     });
@@ -106,6 +113,30 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
         integrator.setBeepEnabled(true);
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
         integrator.initiateScan();
+    }
+
+    private void showTagIdDialog() {
+        final View view = LayoutInflater.from(this).inflate(R.layout.tagid_layout, null);
+        new AlertDialog.Builder(this)
+                .setView(view)
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                })
+                .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        EditText text = view.findViewById(R.id.tagId);
+                        if (!MyApplication.isNetConnected()) {
+                            saveToLocalDevice(text.getText().toString().trim());
+                            return;
+                        }
+
+                        pushToNetwork(text.getText().toString().trim());
+                    }
+                }).create().show();
     }
 
     private void logOutExhibitor() {
@@ -155,6 +186,17 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
         Toast.makeText(this, "Locally Checked In", Toast.LENGTH_SHORT).show();
     }
 
+    private void saveToLocalDevice(String tagid) {
+        Set<String> users = preferences.getStringSet(Constants.EXHIBITOR_USERS, new HashSet<String>());
+
+        if (users.contains(tagid)) ;
+        else {
+            users.add(tagid);
+            preferences.edit().putStringSet(Constants.EXHIBITOR_USERS, users).apply();
+        }
+        Toast.makeText(this, "Locally Checked In", Toast.LENGTH_SHORT).show();
+    }
+
 
     private void pushToNetwork(final User user) {
         DataAdapter.getInstance().getDataSource()
@@ -165,6 +207,16 @@ public class ExhibitorScanQR extends AppCompatActivity implements View.OnClickLi
                             showCheckInDialog(user, true);
                         else
                             showCheckInDialog(user, false);
+                    }
+                });
+    }
+
+    private void pushToNetwork(String tagId) {
+        DataAdapter.getInstance().getDataSource()
+                .checkInExhibitor(exhibitorNameString, tagId, new PostCallback<ExhibitorResponseData>() {
+                    @Override
+                    public void onResultCalled(boolean isSuccess, ExhibitorResponseData result) {
+                        Toast.makeText(ExhibitorScanQR.this, "Successfully Updated", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
