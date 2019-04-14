@@ -32,7 +32,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, UserCallback {
 
-    private Button scan;
+  //  private Button scan;
     private Button exhibitor;
     private Button refresh;
     private DataAdapter.DataSource source;
@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onFailed(String message) {
-        scan.setEnabled(false);
+       // scan.setEnabled(false);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 

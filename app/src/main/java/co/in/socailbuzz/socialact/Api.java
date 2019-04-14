@@ -16,7 +16,7 @@ public interface Api {
     String BANDS = "bands";
     String EXHIBITOR_NAME = "exhibitor_name";
 
-    @GET("terminal-social-users/GHEDEX/socialbuzz123")
+    @GET("terminal-social-users/GHEDEX/ghedex-2019-checkin")
     Call<Data> getAllUsers();
 
     @POST("post/message")
